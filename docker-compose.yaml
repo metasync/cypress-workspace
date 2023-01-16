@@ -1,0 +1,41 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:1.23-alpine
+    ports:
+      - 80:80
+      - 443:443
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+  admin:
+    image: quay.io/chimanlei/node-dev:18.13.0-alpine3.17
+    working_dir: /home/apps
+    volumes:
+      - ./apps:/home/apps
+    entrypoint: /bin/sh
+    stdin_open: true
+    tty: true
+  cypress:
+    image: cypress/included:12.3.0
+    working_dir: /home/apps
+    volumes:
+      - ./apps:/home/apps
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    env_file:
+      - host-ip.env
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
+    # entrypoint: cypress run
+  demo:
+    image: quay.io/chimanlei/node-dev:18.13.0-alpine3.17
+    working_dir: /home/apps/demo
+    volumes:
+      - ./apps:/home/apps
+    # entrypoint: /bin/sh
+    # stdin_open: true
+    # tty: true
+    entrypoint: npm run dev -- --host
+  
